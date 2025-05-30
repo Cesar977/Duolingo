@@ -46,11 +46,11 @@ const App = () => {
       if (usuario) {
         setUser(usuario);
 
-        // Revisa si el perfil está completo
         const userDocRef = doc(db, 'users', usuario.uid);
         const userDoc = await getDoc(userDocRef);
         const userData = userDoc.data();
 
+        // Verificamos perfil completo: intereses + foto
         if (userDoc.exists() && userData?.interests?.length > 0 && usuario.photoURL) {
           setProfileComplete(true);
         } else {
@@ -67,7 +67,7 @@ const App = () => {
     return unsubscribe;
   }, []);
 
-  if (initializing) return null; // Aquí puedes poner un SplashScreen si quieres
+  if (initializing) return null; // O splash screen
 
   return (
     <View style={{ flex: 1 }}>

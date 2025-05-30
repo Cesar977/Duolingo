@@ -4,6 +4,11 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
+import { auth, db, storage } from '../firebase/firebaseConfig'; // Ajusta la ruta si hace falta
+import { updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
 const interestsList = [
   'Inglés',
   'Francés',
@@ -22,6 +27,7 @@ const interestsList = [
 const Setup = ({ navigation }) => {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [imageUri, setImageUri] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const toggleInterest = (interest) => {
     if (selectedInterests.includes(interest)) {
@@ -50,7 +56,24 @@ const Setup = ({ navigation }) => {
     }
   };
 
-  const handleSaveProfile = () => {
+  const uploadImageToFirebase = async (uri, uid) => {
+    setUploading(true);
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const storageRef = ref(storage, `profilePics/${uid}.jpg`);
+      await uploadBytes(storageRef, blob);
+      const url = await getDownloadURL(storageRef);
+      setUploading(false);
+      return url;
+    } catch (error) {
+      setUploading(false);
+      Alert.alert('Error', 'Error al subir la imagen');
+      return null;
+    }
+  };
+
+  const handleSaveProfile = async () => {
     if (selectedInterests.length === 0) {
       Alert.alert('Selecciona al menos un interés');
       return;
@@ -59,11 +82,33 @@ const Setup = ({ navigation }) => {
       Alert.alert('Sube una foto de perfil');
       return;
     }
-    // Navegar a AppTabs (el contenedor de Home y Perfil)
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'AppTabs', params: { imageUri, selectedInterests } }],
-    });
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        Alert.alert('Error', 'Usuario no autenticado');
+        return;
+      }
+
+      // Subir imagen y obtener URL
+      const photoURL = await uploadImageToFirebase(imageUri, user.uid);
+      if (!photoURL) return;
+
+      // Actualizar foto en perfil de Firebase Auth
+      await updateProfile(user, { photoURL });
+
+      // Guardar intereses en Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        interests: selectedInterests,
+      }, { merge: true });
+
+      // Navegar al home limpio (reset)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'AppTabs' }],
+      });
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
@@ -104,10 +149,11 @@ const Setup = ({ navigation }) => {
       </View>
 
       <TouchableOpacity
-        style={styles.button}
+        style={[styles.button, uploading && { opacity: 0.6 }]}
         onPress={handleSaveProfile}
+        disabled={uploading}
       >
-        <Text style={styles.buttonText}>Guardar y continuar</Text>
+        <Text style={styles.buttonText}>{uploading ? 'Guardando...' : 'Guardar y continuar'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -140,18 +186,17 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: '#a1c349',
+    backgroundColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    color: '#f0fdf4',
-    fontWeight: 'bold',
+    color: '#555',
   },
   subtitle: {
     fontSize: 20,
-    marginBottom: 15,
     fontWeight: '600',
+    marginBottom: 10,
     color: '#2a4501',
   },
   interestsContainer: {
@@ -162,32 +207,32 @@ const styles = StyleSheet.create({
   },
   interestBubble: {
     borderWidth: 1,
-    borderColor: '#a1c349',
-    borderRadius: 20,
+    borderColor: '#2a4501',
     paddingVertical: 8,
     paddingHorizontal: 15,
+    borderRadius: 20,
     margin: 6,
   },
   interestBubbleSelected: {
-    backgroundColor: '#58cc02',
-    borderColor: '#2a4501',
+    backgroundColor: '#6c63ff',
+    borderColor: '#6c63ff',
   },
   interestText: {
     color: '#2a4501',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   interestTextSelected: {
-    color: '#f0fdf4',
+    color: '#fff',
   },
   button: {
-    backgroundColor: '#58cc02',
+    backgroundColor: '#6c63ff',
     paddingVertical: 15,
     paddingHorizontal: 50,
-    borderRadius: 15,
+    borderRadius: 30,
   },
   buttonText: {
-    color: '#f0fdf4',
-    fontWeight: 'bold',
+    color: '#fff',
+    fontWeight: '700',
     fontSize: 18,
   },
 });
