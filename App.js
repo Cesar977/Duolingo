@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -16,6 +16,7 @@ import Cursos from './src/componentes/Cursos';
 import Perfil from './src/componentes/Perfil';
 import QuizScreen from './src/componentes/QuizScreen';
 import CursoDetalle from './src/componentes/CursoDetalle';
+import Calendario from './src/componentes/Calendario';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -32,6 +33,7 @@ const AppTabs = () => (
         if (route.name === 'Inicio') iconName = 'home';
         else if (route.name === 'Cursos') iconName = 'book';
         else if (route.name === 'Perfil') iconName = 'person';
+        else if (route.name === 'Calendario') iconName = 'calendar';
         return <Icon name={iconName} size={size} color={color} />;
       },
     })}
@@ -39,6 +41,7 @@ const AppTabs = () => (
     <Tab.Screen name="Inicio" component={Home} />
     <Tab.Screen name="Cursos" component={Cursos} />
     <Tab.Screen name="Perfil" component={Perfil} />
+    <Tab.Screen name="Calendario" component={Calendario} />
   </Tab.Navigator>
 );
 
@@ -57,7 +60,7 @@ const App = () => {
   if (initializing) {
     return (
       <View style={{ flex:1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Cargando...</Text>
+        <ActivityIndicator size="large" color="#6c63ff" />
       </View>
     );
   }
