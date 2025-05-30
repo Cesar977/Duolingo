@@ -30,7 +30,6 @@ const Registro = ({ navigation }) => {
       // Redirigir a la pantalla de gustos y foto
       navigation.navigate('SetupProfile');
     } catch (error) {
-      // Manejo de errores
       Alert.alert('Error', error.message);
     }
   };
@@ -77,6 +76,12 @@ const Registro = ({ navigation }) => {
 
       <TouchableOpacity style={styles.button} onPress={handleRegistro}>
         <Text style={styles.buttonText}>Registrar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.loginLink}>
+        <Text style={styles.loginText}>
+          ¿Ya tienes cuenta? <Text style={styles.loginTextBold}>Iniciar sesión</Text>
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -125,5 +130,17 @@ const styles = StyleSheet.create({
     color: '#f0fdf4',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  loginLink: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  loginText: {
+    color: '#2a4501',
+    fontSize: 14,
+  },
+  loginTextBold: {
+    fontWeight: 'bold',
+    color: '#58cc02',
   },
 });

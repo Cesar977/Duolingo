@@ -6,10 +6,12 @@ import {
   Image, 
   TouchableOpacity, 
   Alert, 
-  ScrollView 
+  ScrollView,
+  Platform
 } from 'react-native';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../firebase/firebaseConfig'; // Importación corregida
+import * as ImagePicker from 'expo-image-picker';
+import { signOut, updateProfile } from 'firebase/auth';
+import { auth } from '../../firebase/firebaseConfig'; 
 
 const dummyCourses = [
   { id: '1', title: 'Basics 1', completed: true },
@@ -18,38 +20,55 @@ const dummyCourses = [
   { id: '4', title: 'Travel', completed: false },
 ];
 
+const dummyAchievements = [
+  { id: 'a1', name: 'Primer Curso Completado', icon: '🏅' },
+  { id: 'a2', name: '5 Horas Estudiadas', icon: '⏰' },
+  { id: 'a3', name: '100% en Evaluación', icon: '🎯' },
+];
+
 const Perfil = () => {
   const [user, setUser] = useState(null);
+  const [photoURI, setPhotoURI] = useState(null);
 
   useEffect(() => {
-    setUser(auth.currentUser);
+    const currentUser = auth.currentUser;
+    setUser(currentUser);
+    setPhotoURI(currentUser?.photoURL || null);
   }, []);
 
-  // Calculamos los logros según cursos completados
-  const completedCourses = dummyCourses.filter(course => course.completed);
+  // Solicitar permisos para usar la galería (solo iOS y Android)
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS !== 'web') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permiso necesario', 'Se necesita permiso para acceder a la galería.');
+        }
+      }
+    })();
+  }, []);
 
-  const achievements = [];
+  const pickImage = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
 
-  if (completedCourses.length >= 1) {
-    achievements.push({ id: 'a1', name: 'Primer Curso Completado', icon: '🏅' });
-  }
-  if (completedCourses.length >= 3) {
-    achievements.push({ id: 'a2', name: '3 Cursos Completados', icon: '🎓' });
-  }
-  if (completedCourses.length === dummyCourses.length) {
-    achievements.push({ id: 'a3', name: 'Todos los Cursos Completados', icon: '🏆' });
-  }
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        setPhotoURI(uri);
 
-  // Suponiendo 1.5 horas por curso completado
-  const hoursStudied = (completedCourses.length * 1.5).toFixed(1);
-  if (hoursStudied > 0) {
-    achievements.push({ id: 'a4', name: `${hoursStudied} Horas Estudiadas`, icon: '⏰' });
-  }
-
-  // Logro 100% evaluación (simplificado, si completó al menos un curso)
-  if (completedCourses.length > 0) {
-    achievements.push({ id: 'a5', name: '100% en Evaluación', icon: '🎯' });
-  }
+        // Actualizar foto de perfil en Firebase
+        await updateProfile(auth.currentUser, { photoURL: uri });
+        Alert.alert('Foto actualizada', 'La foto de perfil se actualizó correctamente.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo actualizar la foto de perfil.');
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -70,12 +89,15 @@ const Perfil = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={styles.profileSection}>
-        <Image
-          source={{
-            uri: user.photoURL || 'https://i.pravatar.cc/150?img=10',
-          }}
-          style={styles.avatar}
-        />
+        <TouchableOpacity onPress={pickImage}>
+          <Image
+            source={{
+              uri: photoURI || 'https://upload.wikimedia.org/wikipedia/commons/4/44/Duolingo_logo.png',
+            }}
+            style={styles.avatar}
+          />
+          <Text style={styles.changePhotoText}>Cambiar foto</Text>
+        </TouchableOpacity>
         <Text style={styles.name}>{user.displayName || 'Usuario Anónimo'}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
@@ -101,7 +123,7 @@ const Perfil = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Logros</Text>
         <View style={styles.achievementsContainer}>
-          {achievements.map((ach) => (
+          {dummyAchievements.map((ach) => (
             <View key={ach.id} style={styles.achievementItem}>
               <Text style={styles.achievementIcon}>{ach.icon}</Text>
               <Text style={styles.achievementName}>{ach.name}</Text>
@@ -146,6 +168,13 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderWidth: 3,
     borderColor: '#58cc02',
+    marginBottom: 10,
+  },
+  changePhotoText: {
+    color: '#58cc02',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
     marginBottom: 15,
   },
   name: {
