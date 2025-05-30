@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -17,6 +17,7 @@ import Perfil from './src/componentes/Perfil';
 import QuizScreen from './src/componentes/QuizScreen';
 import CursoDetalle from './src/componentes/CursoDetalle';
 import Calendario from './src/componentes/Calendario';
+import SplashScreen from './src/componentes/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -48,14 +49,23 @@ const AppTabs = () => (
 const App = () => {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
+    const splashTimeout = setTimeout(() => setShowSplash(false), 2000); // Mostrar splash 2 segundos
+
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       setUser(usuario);
       if (initializing) setInitializing(false);
     });
-    return unsubscribe;
+
+    return () => {
+      clearTimeout(splashTimeout);
+      unsubscribe();
+    };
   }, []);
+
+  if (showSplash) return <SplashScreen />;
 
   if (initializing) {
     return (
