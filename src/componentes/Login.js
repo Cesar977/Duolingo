@@ -26,7 +26,7 @@ const Login = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // El cambio de pantalla lo hará App.js al detectar el usuario
+      // No navegamos aquí: App.js detecta el usuario y muestra la pantalla correcta
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
         Alert.alert('Error', 'Usuario no encontrado');

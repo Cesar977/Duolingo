@@ -8,8 +8,8 @@ import {
   Alert, 
   ScrollView 
 } from 'react-native';
-import { auth } from '../../firebase/firebaseConfig'; // Ajusta según ruta
 import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase/firebaseConfig'; // Importación corregida
 
 const dummyCourses = [
   { id: '1', title: 'Basics 1', completed: true },
@@ -18,18 +18,38 @@ const dummyCourses = [
   { id: '4', title: 'Travel', completed: false },
 ];
 
-const dummyAchievements = [
-  { id: 'a1', name: 'Primer Curso Completado', icon: '🏅' },
-  { id: 'a2', name: '5 Horas Estudiadas', icon: '⏰' },
-  { id: 'a3', name: '100% en Evaluación', icon: '🎯' },
-];
-
 const Perfil = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     setUser(auth.currentUser);
   }, []);
+
+  // Calculamos los logros según cursos completados
+  const completedCourses = dummyCourses.filter(course => course.completed);
+
+  const achievements = [];
+
+  if (completedCourses.length >= 1) {
+    achievements.push({ id: 'a1', name: 'Primer Curso Completado', icon: '🏅' });
+  }
+  if (completedCourses.length >= 3) {
+    achievements.push({ id: 'a2', name: '3 Cursos Completados', icon: '🎓' });
+  }
+  if (completedCourses.length === dummyCourses.length) {
+    achievements.push({ id: 'a3', name: 'Todos los Cursos Completados', icon: '🏆' });
+  }
+
+  // Suponiendo 1.5 horas por curso completado
+  const hoursStudied = (completedCourses.length * 1.5).toFixed(1);
+  if (hoursStudied > 0) {
+    achievements.push({ id: 'a4', name: `${hoursStudied} Horas Estudiadas`, icon: '⏰' });
+  }
+
+  // Logro 100% evaluación (simplificado, si completó al menos un curso)
+  if (completedCourses.length > 0) {
+    achievements.push({ id: 'a5', name: '100% en Evaluación', icon: '🎯' });
+  }
 
   const handleLogout = async () => {
     try {
@@ -81,7 +101,7 @@ const Perfil = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Logros</Text>
         <View style={styles.achievementsContainer}>
-          {dummyAchievements.map((ach) => (
+          {achievements.map((ach) => (
             <View key={ach.id} style={styles.achievementItem}>
               <Text style={styles.achievementIcon}>{ach.icon}</Text>
               <Text style={styles.achievementName}>{ach.name}</Text>
