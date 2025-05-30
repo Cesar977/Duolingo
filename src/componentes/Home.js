@@ -21,6 +21,7 @@ const Home = () => {
   }, []);
 
   const handlePressLesson = (lesson) => {
+    // Navega a CursoDetalle pasando el curso seleccionado
     navigation.navigate('CursoDetalle', { curso: lesson });
   };
 
@@ -36,7 +37,11 @@ const Home = () => {
       <Text style={styles.seccion}>Tus lecciones</Text>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {lessons.map((lesson) => (
-          <TouchableOpacity key={lesson.id} style={styles.lessonCard} onPress={() => handlePressLesson(lesson)}>
+          <TouchableOpacity
+            key={lesson.id}
+            style={styles.lessonCard}
+            onPress={() => handlePressLesson(lesson)}
+          >
             <Icon name={lesson.icon} size={36} color="#fff" />
             <Text style={styles.lessonText}>{lesson.title}</Text>
           </TouchableOpacity>
@@ -53,10 +58,30 @@ const styles = StyleSheet.create({
   header: { marginTop: 20, marginBottom: 20 },
   bienvenida: { fontSize: 16, color: '#4b5563' },
   nombre: { fontSize: 24, fontWeight: '700', color: '#222', marginTop: 4 },
-  xpBox: { backgroundColor: '#d9f99d', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 12, alignSelf: 'flex-start', marginBottom: 20 },
+  xpBox: {
+    backgroundColor: '#d9f99d',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+  },
   xpText: { fontSize: 16, color: '#3f6212', fontWeight: '600' },
   seccion: { fontSize: 20, fontWeight: '600', marginBottom: 10, color: '#222' },
   scrollContainer: { flexGrow: 1, paddingBottom: 100, alignItems: 'center' },
-  lessonCard: { width: '100%', backgroundColor: '#58cc02', borderRadius: 16, paddingVertical: 20, paddingHorizontal: 25, marginBottom: 16, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.1, shadowOffset: { width: 0, height: 4 }, shadowRadius: 6, elevation: 5 },
+  lessonCard: {
+    width: '100%',
+    backgroundColor: '#58cc02',
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    marginBottom: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
+  },
   lessonText: { color: '#fff', fontWeight: 'bold', fontSize: 18, marginTop: 8 },
 });

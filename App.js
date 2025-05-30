@@ -1,4 +1,3 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 
@@ -16,6 +15,7 @@ import Home from './src/componentes/Home';
 import Cursos from './src/componentes/Cursos';
 import Perfil from './src/componentes/Perfil';
 import QuizScreen from './src/componentes/QuizScreen';
+import CursoDetalle from './src/componentes/CursoDetalle';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,6 +73,7 @@ const App = () => {
         ) : (
           <>
             <Stack.Screen name="AppTabs" component={AppTabs} />
+            <Stack.Screen name="CursoDetalle" component={CursoDetalle} />
             <Stack.Screen name="QuizScreen" component={QuizScreen} />
           </>
         )}
