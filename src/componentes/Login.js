@@ -1,26 +1,39 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { auth } from '../../firebase/firebaseConfig';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  SafeAreaView,
+} from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebase/firebaseConfig';
+import { useNavigation } from '@react-navigation/native';
 
-const Login = ({ navigation }) => {
+const Login = () => {
+  const navigation = useNavigation();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Por favor ingresa correo y contraseña');
+      Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Cambio de pantalla lo hace App.js detectando el usuario
+      // El cambio de pantalla lo hará App.js al detectar el usuario
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
         Alert.alert('Error', 'Usuario no encontrado');
       } else if (error.code === 'auth/wrong-password') {
         Alert.alert('Error', 'Contraseña incorrecta');
+      } else if (error.code === 'auth/invalid-email') {
+        Alert.alert('Error', 'Correo electrónico inválido');
       } else {
         Alert.alert('Error', error.message);
       }
@@ -28,13 +41,13 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Iniciar Sesión</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Correo electrónico"
-        placeholderTextColor="#999"
+        placeholderTextColor="#8a9a5b"
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
@@ -44,7 +57,7 @@ const Login = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
-        placeholderTextColor="#999"
+        placeholderTextColor="#8a9a5b"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -55,14 +68,15 @@ const Login = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('Registro')}
         style={{ marginTop: 20 }}
+        onPress={() => navigation.navigate('Registro')}
       >
-        <Text style={{ color: '#6c63ff' }}>
-          ¿No tienes cuenta? Regístrate
+        <Text style={{ color: '#2a4501', textAlign: 'center' }}>
+          ¿No tienes cuenta?{' '}
+          <Text style={{ fontWeight: 'bold' }}>Regístrate aquí</Text>
         </Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -71,36 +85,43 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eef1f9',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
     paddingHorizontal: 30,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    color: '#2a4501',
     marginBottom: 40,
-    color: '#333',
+    textAlign: 'center',
   },
   input: {
-    width: '100%',
+    backgroundColor: '#d9f99d',
+    borderRadius: 12,
     height: 50,
-    backgroundColor: '#fff',
-    borderRadius: 10,
     paddingHorizontal: 15,
+    fontSize: 16,
+    color: '#2a4501',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#a1c349',
   },
   button: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#58cc02',
     paddingVertical: 15,
-    paddingHorizontal: 50,
-    borderRadius: 10,
+    borderRadius: 12,
+    marginTop: 10,
+    alignItems: 'center',
+    shadowColor: '#4b7501',
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#f0fdf4',
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });

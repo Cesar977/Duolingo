@@ -1,42 +1,59 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { auth } from '../../firebase/firebaseConfig';
 
-// Datos simulados
 const lessons = [
-  { id: '1', title: 'Basics 1', icon: 'book' },
-  { id: '2', title: 'Greetings', icon: 'chatbubbles' },
-  { id: '3', title: 'Food', icon: 'restaurant' },
-  { id: '4', title: 'Travel', icon: 'airplane' },
+  { id: '1', title: 'Básico 1', icon: 'book' },
+  { id: '2', title: 'Saludos', icon: 'chatbubbles' },
+  { id: '3', title: 'Comida', icon: 'restaurant' },
+  { id: '4', title: 'Viajes', icon: 'airplane' },
 ];
 
 const Home = () => {
-  const navigation = useNavigation();
+  const [nombreUsuario, setNombreUsuario] = useState('');
+
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user) {
+      setNombreUsuario(user.displayName || 'Usuario');
+    }
+  }, []);
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <SafeAreaView style={styles.container}>
+      {/* Saludo */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>¡Hola, Juan! 👋</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-          <Icon name="person-circle-outline" size={36} color="#333" />
-        </TouchableOpacity>
+        <Text style={styles.bienvenida}>¡Bienvenido de nuevo!</Text>
+        <Text style={styles.nombre}>👋 {nombreUsuario}</Text>
       </View>
 
       {/* XP */}
-      <Text style={styles.xpText}>XP: 120</Text>
+      <View style={styles.xpBox}>
+        <Text style={styles.xpText}>⭐ 120 XP</Text>
+      </View>
 
       {/* Lecciones */}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {lessons.map((lesson, index) => (
-          <TouchableOpacity key={lesson.id} style={styles.bubble}>
-            <Icon name={lesson.icon} size={32} color="#fff" />
-            <Text style={styles.bubbleText}>{lesson.title}</Text>
+      <Text style={styles.seccion}>Tus lecciones</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {lessons.map((lesson) => (
+          <TouchableOpacity key={lesson.id} style={styles.lessonCard}>
+            <Icon name={lesson.icon} size={36} color="#fff" />
+            <Text style={styles.lessonText}>{lesson.title}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -45,46 +62,65 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4ff',
-    paddingTop: 60,
+    backgroundColor: '#f0fdf4', // fondo suave verde
     paddingHorizontal: 20,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
   },
-  greeting: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  bienvenida: {
+    fontSize: 16,
+    color: '#4b5563',
+  },
+  nombre: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#222',
+    marginTop: 4,
+  },
+  xpBox: {
+    backgroundColor: '#d9f99d',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
   },
   xpText: {
-    marginTop: 10,
     fontSize: 16,
-    color: '#666',
+    color: '#3f6212',
+    fontWeight: '600',
+  },
+  seccion: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 10,
+    color: '#222',
   },
   scrollContainer: {
-    marginTop: 30,
+    flexGrow: 1,
     paddingBottom: 100,
     alignItems: 'center',
   },
-  bubble: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#6c63ff',
-    borderRadius: 50,
-    justifyContent: 'center',
+  lessonCard: {
+    width: '100%',
+    backgroundColor: '#58cc02', // verde Duolingo
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    marginBottom: 16,
     alignItems: 'center',
-    marginBottom: 30,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
     elevation: 5,
   },
-  bubbleText: {
+  lessonText: {
     color: '#fff',
-    fontWeight: '600',
-    marginTop: 5,
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginTop: 8,
   },
 });

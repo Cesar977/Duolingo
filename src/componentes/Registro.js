@@ -1,43 +1,51 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert
+} from 'react-native';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../firebase/firebaseConfig';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 
-const Registro = () => {
+const Registro = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
 
   const handleRegistro = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !displayName) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
-
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Las contraseñas no coinciden');
       return;
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // El cambio de pantalla lo hará App.js al detectar el usuario
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Actualiza displayName en perfil de Firebase
+      await updateProfile(userCredential.user, { displayName });
+
+      // Redirigir a la pantalla de gustos y foto
+      navigation.navigate('SetupProfile');
     } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        Alert.alert('Error', 'El correo ya está en uso');
-      } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Error', 'Correo electrónico inválido');
-      } else if (error.code === 'auth/weak-password') {
-        Alert.alert('Error', 'La contraseña es demasiado débil');
-      } else {
-        Alert.alert('Error', error.message);
-      }
+      // Manejo de errores
+      Alert.alert('Error', error.message);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Registro</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre completo"
+        placeholderTextColor="#999"
+        value={displayName}
+        onChangeText={setDisplayName}
+      />
 
       <TextInput
         style={styles.input}
@@ -79,36 +87,43 @@ export default Registro;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eef1f9',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
     paddingHorizontal: 30,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    color: '#2a4501',
     marginBottom: 40,
-    color: '#333',
+    textAlign: 'center',
   },
   input: {
-    width: '100%',
+    backgroundColor: '#d9f99d',
+    borderRadius: 12,
     height: 50,
-    backgroundColor: '#fff',
-    borderRadius: 10,
     paddingHorizontal: 15,
+    fontSize: 16,
+    color: '#2a4501',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#a1c349',
   },
   button: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#58cc02',
     paddingVertical: 15,
-    paddingHorizontal: 50,
-    borderRadius: 10,
+    borderRadius: 12,
+    marginTop: 10,
+    alignItems: 'center',
+    shadowColor: '#4b7501',
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#f0fdf4',
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });
